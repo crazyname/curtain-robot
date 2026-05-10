@@ -1,0 +1,60 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE / editor
+.vscode/
+.idea/
+.metadata/
+.project
+.cproject
+.settings/
+
+# Logs
+*.log
+logs/
+
+# Executables / binaries
+*.exe
+*.dll
+*.bin
+*.o
+*.obj
+*.lib
+*.a
+
+# JLC assistant / installer files
+jlc-assistant/
+jlc-assistant-window-*.exe
+
+# Build / generated files
+build/
+dist/
+out/
+Debug/
+Release/
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Secrets
+.env
+*.pem
+*.key
+id_rsa
+token.txt
+password.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+.git_bad_upload_backup/
