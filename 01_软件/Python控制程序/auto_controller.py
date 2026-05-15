@@ -1,11 +1,15 @@
 """
 自动控制模块 - 基于时间和光线传感器的自动控制
 """
-import schedule
 import time
 import logging
 import threading
 from datetime import datetime
+
+try:
+    import schedule
+except ImportError:
+    schedule = None
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +48,10 @@ class AutoController:
         self.auto_open_time = open_time
         self.auto_close_time = close_time
         
+        if schedule is None:
+            logger.warning("未安装schedule，定时自动控制暂不可用；请先执行: pip install schedule")
+            return
+
         # 清除旧的任务
         schedule.clear()
         
@@ -61,14 +69,17 @@ class AutoController:
         self.enabled = True
         self.running = True
         
-        # 设置定时任务
-        schedule.clear()
-        schedule.every().day.at(self.auto_open_time).do(self._auto_open)
-        schedule.every().day.at(self.auto_close_time).do(self._auto_close)
-        
-        # 启动调度线程
-        self.schedule_thread = threading.Thread(target=self._schedule_loop, daemon=True)
-        self.schedule_thread.start()
+        if schedule is not None:
+            # 设置定时任务
+            schedule.clear()
+            schedule.every().day.at(self.auto_open_time).do(self._auto_open)
+            schedule.every().day.at(self.auto_close_time).do(self._auto_close)
+
+            # 启动调度线程
+            self.schedule_thread = threading.Thread(target=self._schedule_loop, daemon=True)
+            self.schedule_thread.start()
+        else:
+            logger.warning("未安装schedule，已启用控制器状态，但不会执行定时任务")
         
         # 如果启用了光线传感器，启动光线监控
         if self.light_sensor:
@@ -80,7 +91,8 @@ class AutoController:
         """禁用自动控制"""
         self.enabled = False
         self.running = False
-        schedule.clear()
+        if schedule is not None:
+            schedule.clear()
         
         if self.light_sensor:
             self.light_sensor.stop_monitoring()
@@ -90,7 +102,8 @@ class AutoController:
     def _schedule_loop(self):
         """定时任务循环"""
         while self.running:
-            schedule.run_pending()
+            if schedule is not None:
+                schedule.run_pending()
             time.sleep(1)
     
     def _auto_open(self):

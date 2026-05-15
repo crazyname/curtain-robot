@@ -1,10 +1,14 @@
 """
 串口通信模块 - 用于与U60FNQ2单片机通信
 """
-import serial
 import time
 import logging
 import threading
+
+try:
+    import serial
+except ImportError:
+    serial = None
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +36,11 @@ class SerialCommunicator:
         
     def connect(self):
         """连接串口"""
+        if serial is None:
+            logger.error("未安装pyserial，请先执行: pip install pyserial")
+            self.is_connected = False
+            return False
+
         try:
             self.serial = serial.Serial(
                 port=self.port,

@@ -5,8 +5,6 @@ import time
 import logging
 import json
 import os
-from gpio_controller import GPIOController
-from serial_communicator import SerialCommunicator
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +76,7 @@ class MotorController:
         logger.info(f"打开窗帘 - 运行时间: {duration_ms}ms")
         
         if self.serial_communicator:
-            # 通过串口控制
+            # 0.3主线：通过串口让STM32按固件内部记录的worktime执行
             self.serial_communicator.send_open_command()
         elif self.gpio_controller:
             # 直接GPIO控制
@@ -99,7 +97,7 @@ class MotorController:
         logger.info(f"关闭窗帘 - 运行时间: {duration_ms}ms")
         
         if self.serial_communicator:
-            # 通过串口控制
+            # 0.3主线：通过串口让STM32按固件内部记录的worktime执行
             self.serial_communicator.send_close_command()
         elif self.gpio_controller:
             # 直接GPIO控制
@@ -119,6 +117,7 @@ class MotorController:
         logger.info("开始校准模式 - 发送开始命令")
         
         if self.serial_communicator:
+            # STM32固件中C命令是切换式校准：第一次开始，第二次停止并记录worktime
             self.serial_communicator.send_calibrate_command()
         elif self.gpio_controller:
             # 直接控制模式下的校准
@@ -150,8 +149,10 @@ class MotorController:
         self.is_calibrating = False
         self.calibration_start_time = None
         
-        # 停止电机
-        if self.gpio_controller:
+        # 停止电机或通知STM32结束校准
+        if self.serial_communicator:
+            self.serial_communicator.send_calibrate_command()
+        elif self.gpio_controller:
             self.gpio_controller.stop()
         
         # 保存数据

@@ -6,10 +6,8 @@ import signal
 import sys
 import time
 from config import *
-from gpio_controller import GPIOController
 from serial_communicator import SerialCommunicator
 from motor_controller import MotorController
-from light_sensor import LightSensor
 from auto_controller import AutoController
 
 # 配置日志
@@ -31,7 +29,8 @@ class CurtainRobot:
     def __init__(self):
         """初始化智能窗帘机器人"""
         logger.info("=" * 50)
-        logger.info("智能窗帘机器人启动中...")
+        logger.info(f"智能窗帘机器人 v{PROJECT_VERSION} 启动中...")
+        logger.info(f"控制模式: {CONTROL_MODE}")
         logger.info("=" * 50)
         
         # 初始化组件
@@ -41,35 +40,7 @@ class CurtainRobot:
         self.light_sensor = None
         self.auto_controller = None
         
-        # 初始化GPIO控制器（直接控制模式）
-        try:
-            self.gpio_controller = GPIOController(
-                MOTOR_NSLEEP_PIN,
-                MOTOR_IN1_PIN,
-                MOTOR_IN2_PIN
-            )
-            logger.info("GPIO控制器初始化成功（直接控制模式）")
-        except Exception as e:
-            logger.warning(f"GPIO控制器初始化失败: {e}")
-            logger.info("将尝试使用串口控制模式")
-        
-        # 初始化串口通信器（通过单片机控制模式）
-        try:
-            self.serial_communicator = SerialCommunicator(
-                SERIAL_PORT,
-                SERIAL_BAUDRATE,
-                SERIAL_TIMEOUT
-            )
-            if self.serial_communicator.connect():
-                logger.info("串口通信器初始化成功（单片机控制模式）")
-                # 设置接收回调
-                self.serial_communicator.set_receive_callback(self._on_serial_receive)
-            else:
-                logger.warning("串口连接失败，将使用GPIO直接控制模式")
-                self.serial_communicator = None
-        except Exception as e:
-            logger.warning(f"串口通信器初始化失败: {e}")
-            self.serial_communicator = None
+        self._init_control_backend()
         
         # 初始化电机控制器
         self.motor_controller = MotorController(
@@ -78,15 +49,10 @@ class CurtainRobot:
             data_file=DATA_FILE
         )
         
-        # 初始化光线传感器
-        try:
-            self.light_sensor = LightSensor(
-                LIGHT_SENSOR_PIN,
-                LIGHT_THRESHOLD
-            )
-            logger.info("光线传感器初始化成功")
-        except Exception as e:
-            logger.warning(f"光线传感器初始化失败: {e}")
+        if LIGHT_SENSOR_ENABLED:
+            self._init_light_sensor()
+        else:
+            logger.info("光线传感器未启用，0.3默认由STM32侧负责传感器/低功耗硬件逻辑")
         
         # 初始化自动控制器
         self.auto_controller = AutoController(
@@ -109,6 +75,67 @@ class CurtainRobot:
         logger.info("=" * 50)
         logger.info("智能窗帘机器人初始化完成")
         logger.info("=" * 50)
+
+    def _init_control_backend(self):
+        """按0.3主线初始化控制后端。"""
+        if CONTROL_MODE not in {"serial", "gpio", "auto"}:
+            raise ValueError("CONTROL_MODE 只能是 serial、gpio 或 auto")
+
+        if CONTROL_MODE in {"serial", "auto"}:
+            self._init_serial_controller()
+
+        if CONTROL_MODE == "gpio" or (CONTROL_MODE == "auto" and self.serial_communicator is None):
+            self._init_gpio_controller()
+
+        if self.serial_communicator is None and self.gpio_controller is None:
+            raise RuntimeError("未找到可用控制后端：请检查串口配置，或设置 CONTROL_MODE=gpio 并在树莓派上运行")
+
+    def _init_serial_controller(self):
+        """初始化串口控制模式：Python发命令，STM32执行硬件动作。"""
+        try:
+            self.serial_communicator = SerialCommunicator(
+                SERIAL_PORT,
+                SERIAL_BAUDRATE,
+                SERIAL_TIMEOUT
+            )
+            if self.serial_communicator.connect():
+                logger.info("串口通信器初始化成功（STM32主控模式）")
+                self.serial_communicator.set_receive_callback(self._on_serial_receive)
+            else:
+                logger.warning("串口连接失败")
+                self.serial_communicator = None
+        except Exception as e:
+            logger.warning(f"串口通信器初始化失败: {e}")
+            self.serial_communicator = None
+
+    def _init_gpio_controller(self):
+        """初始化GPIO直控模式：仅作为树莓派原型备用。"""
+        try:
+            from gpio_controller import GPIOController
+
+            self.gpio_controller = GPIOController(
+                MOTOR_NSLEEP_PIN,
+                MOTOR_IN1_PIN,
+                MOTOR_IN2_PIN
+            )
+            logger.info("GPIO控制器初始化成功（树莓派直控备用模式）")
+        except Exception as e:
+            logger.warning(f"GPIO控制器初始化失败: {e}")
+            self.gpio_controller = None
+
+    def _init_light_sensor(self):
+        """初始化树莓派光线传感器备用路径。"""
+        try:
+            from light_sensor import LightSensor
+
+            self.light_sensor = LightSensor(
+                LIGHT_SENSOR_PIN,
+                LIGHT_THRESHOLD
+            )
+            logger.info("光线传感器初始化成功")
+        except Exception as e:
+            logger.warning(f"光线传感器初始化失败: {e}")
+            self.light_sensor = None
     
     def _on_serial_receive(self, data):
         """
@@ -155,6 +182,8 @@ class CurtainRobot:
     def get_status(self):
         """获取状态信息"""
         status = {
+            'version': PROJECT_VERSION,
+            'control_mode': CONTROL_MODE,
             'gpio_controller': self.gpio_controller is not None,
             'serial_communicator': self.serial_communicator is not None and self.serial_communicator.is_connected,
             'light_sensor': self.light_sensor is not None,
@@ -173,8 +202,9 @@ class CurtainRobot:
         """打印状态信息"""
         status = self.get_status()
         print("\n" + "=" * 50)
-        print("智能窗帘机器人状态")
+        print(f"智能窗帘机器人状态 v{status['version']}")
         print("=" * 50)
+        print(f"控制模式: {status['control_mode']}")
         print(f"GPIO控制器: {'已连接' if status['gpio_controller'] else '未连接'}")
         print(f"串口通信器: {'已连接' if status['serial_communicator'] else '未连接'}")
         print(f"光线传感器: {'已连接' if status['light_sensor'] else '未连接'}")
@@ -210,7 +240,7 @@ class CurtainRobot:
     def run_interactive(self):
         """运行交互式命令行界面"""
         print("\n" + "=" * 50)
-        print("智能窗帘机器人 - 交互式控制")
+        print(f"智能窗帘机器人 v{PROJECT_VERSION} - STM32主控调试台")
         print("=" * 50)
         print("命令列表:")
         print("  1 或 open    - 打开窗帘")
