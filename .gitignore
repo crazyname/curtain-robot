@@ -66,6 +66,8 @@ JLinkSettings.ini
 *.7z
 05_原始压缩包/
 03_课程与文档/
+03_*/
+04_*/
 
 # Secrets
 .env
