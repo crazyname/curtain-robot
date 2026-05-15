@@ -12,20 +12,24 @@ void smart_array(unsigned char* addr,unsigned char *ip)
 	int i;
 	char taddr[30];
 	char * nexttok;
-	char num;
 	strcpy(taddr,(char *)addr);
 	
 	nexttok = taddr;
 	for(i = 0; i < 4 ; i++)
 	{
 		nexttok = strtok(nexttok,".");
+		if(nexttok == NULL)
+		{
+			ip[i] = 0;
+			continue;
+		}
 //		if(nexttok[0] == '0' && nexttok[1] == 'x') num = atoi16(nexttok+2,0x10);
 //		else num = atoi16(nexttok,10);
 		
-		ip[i] = num;
+		ip[i] = (unsigned char)strtoul(nexttok, NULL, 10);
 		nexttok = NULL;
 	}
-}	
+}
 /***********************************************************
   函数名称：Find_string(char *pcBuf,char*left,char*right, char *pcRes)
   函数功能：寻找特定字符串
@@ -43,8 +47,13 @@ int Find_string(char *pcBuf,char *left,char *right, char *pcRes)
 	char *pcBegin = NULL;
 	char *pcEnd = NULL;
 	pcBegin = strstr(pcBuf, left);//找到第一次出现的位置
+	if(pcBegin == NULL)
+	{
+		printf("string name not found!\n");
+		return 0;
+	}
 	pcEnd = strstr(pcBegin+strlen(left), right);//找到右边标识
-	if(pcBegin == NULL || pcEnd == NULL || pcBegin > pcEnd)
+	if(pcEnd == NULL || pcBegin > pcEnd)
 	{
 		printf("string name not found!\n");
 		return 0;
@@ -56,7 +65,6 @@ int Find_string(char *pcBuf,char *left,char *right, char *pcRes)
 		return 1;
 	}
 }
-
 //int Smart_array(char *pcBuf,char *fu)
 //{
 	//memcpy(&citc_server_ip[0],back_ip,strstr(back_ip,".")-back_ip);	

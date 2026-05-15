@@ -72,11 +72,11 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-    uint16_t ID = 0;
-    uint8_t recv_dat[6] = {0};
     uint8_t Find_flag =0;
     uint8_t Time_buf[20];
-    uint32_t start_time,end_time,worktime=0;
+    uint32_t start_time = 0;
+    uint32_t end_time = 0;
+    uint32_t worktime = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -183,7 +183,7 @@ int main(void)
                 {
                     memset(Time_buf, 0x00, sizeof(Time_buf)); //����ջ�����
                     Find_flag =  Find_string((char *)Usart2type.Usart2RecBuffer,"S","T",(char *)Time_buf);
-                    printf("time: %s,%d",Time_buf,(uint32_t )atoi((char *)Time_buf));
+                    printf("time: %s,%lu",Time_buf,(unsigned long)atoi((char *)Time_buf));
                     if(Find_flag) {
                         Calibration_Times((char *)Time_buf);
                     }
@@ -212,7 +212,7 @@ int main(void)
                     worktime = end_time-start_time;
                     start_time = 0;
                     end_time = 0;
-                    printf("worktime:%d\r\n",worktime);
+                    printf("worktime:%lu\r\n",(unsigned long)worktime);
                 }
                 memset(Usart2type.Usart2RecBuffer, 0x00, sizeof(Usart2type.Usart2RecBuffer)); //����ջ�����
             }

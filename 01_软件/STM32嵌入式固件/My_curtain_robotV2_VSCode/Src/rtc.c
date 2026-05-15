@@ -152,13 +152,17 @@ uint32_t time2Stamp(void)    //����ʱ��תʱ���
     printf("%02d:%02d:%02d\r\n",stimestructure.Hours, stimestructure.Minutes, stimestructure.Seconds);
 
     Year=sdatestructure.Year+2000;
-    result = (Year - 1970) * 365 * 24 * 3600 + (monDays[sdatestructure.Month-1] + sdatestructure.Date - 1) * 24 * 3600 + (stimestructure.Hours-8) * 3600 + stimestructure.Minutes * 60 + stimestructure.Seconds;
-    printf("[%u]",result);
+    result = (Year - 1970) * 365 * 24 * 3600 + (monDays[sdatestructure.Month-1] + sdatestructure.Date - 1) * 24 * 3600 + stimestructure.Hours * 3600 + stimestructure.Minutes * 60 + stimestructure.Seconds;
+    if(result >= 8 * 3600)
+    {
+        result -= 8 * 3600;
+    }
+    printf("[%lu]",(unsigned long)result);
     result += (sdatestructure.Month>2 && (Year % 4 == 0) && (Year % 100 != 0 || Year % 400 == 0))*24*3600;	//����
-    printf("[%u]",result);
+    printf("[%lu]",(unsigned long)result);
     Year -= 1970;
     result += (Year/4 - Year/100 + Year/400)*24 * 3600;		  //����
-    printf("[%u]",result);
+    printf("[%lu]",(unsigned long)result);
     printf("ʱ���Success\r\n");
     return result;
 }
@@ -177,7 +181,7 @@ void Calibration_Times(char * Time_buf)
     RTC_Buf[4] = gm_date->tm_min;
     RTC_Buf[5] = gm_date->tm_sec;
     HAL_PWR_EnableBkUpAccess();
-    if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1)!=0x3050) //�Ƿ��һ������
+    if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1)!=0x5050) //�Ƿ��һ������
     {
         HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x5050);
         sTime.Hours = RTC_Buf[3];
@@ -203,7 +207,7 @@ void Calibration_Times(char * Time_buf)
 
 void RTC_Time_Config(uint32_t stoptime)
 {
-    printf("into_sleep_mode\r\nwill sleep %d s\r\n",stoptime);
+    printf("into_sleep_mode\r\nwill sleep %lu s\r\n",(unsigned long)stoptime);
     if(HAL_RTCEx_DeactivateWakeUpTimer(&hrtc) != HAL_OK)
     {
         /*Initialization Error*/
