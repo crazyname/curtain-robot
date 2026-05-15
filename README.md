@@ -1,8 +1,10 @@
 # 智能窗帘 STM32 VSCode 工程
 
-当前说明版本：0.3.1-vscode
+当前说明版本：0.3.3-vscode
 
 本仓库当前以 VS Code + STM32Cube 扩展 + CMake + Ninja + GCC 作为 STM32 固件开发方式。后续 AI 或开发者优先维护 VSCode 工程，不要把它删除成只剩 Keil 工程。
+
+旧版 Keil/CubeMX 工程 `My_curtain_robotV2` 已压缩备份到本地目录 `本地备份_不提交git\固件工程备份\`，该备份目录不提交到 git。仓库内只保留 `My_curtain_robotV2_VSCode` 作为 STM32 固件开发工程。
 
 ## 必须打开的工程
 
