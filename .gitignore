@@ -32,6 +32,8 @@ logs/
 # JLC assistant / installer files
 jlc-assistant/
 jlc-assistant-window-*.exe
+04_工具/立创EDA助手/
+04_工具/安装包/*.exe
 
 # Build / generated files
 build/
@@ -39,11 +41,20 @@ dist/
 out/
 Debug/
 Release/
+*.crf
+*.d
+*.axf
+*.map
+*.lnp
+*.dep
+*.htm
+*.build_log.htm
 
 # Archives
 *.zip
 *.rar
 *.7z
+05_原始压缩包/
 
 # Secrets
 .env

@@ -1,0 +1,8 @@
+/* pages/bluetooth/bluetooth.wxss */
+.cu-form-group .title {
+    min-width: calc(4em + 30rpx);
+  }
+  
+page{
+    font-size: 30rpx; 
+}

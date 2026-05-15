@@ -1,0 +1,28 @@
+{
+    "cmake.cmakePath": "cube-cmake",
+    "cmake.configureArgs": [
+        "-DCMAKE_COMMAND=cube-cmake"
+    ],
+    "cmake.configureSettings": {
+        "CMAKE_MAKE_PROGRAM": "C:/Users/enze/AppData/Local/stm32cube/bundles/ninja/1.13.2+st.1/bin/ninja.exe"
+    },
+    "cmake.preferredGenerators": [
+        "Ninja"
+    ],
+    "cmake.buildDirectory": "${workspaceFolder}/build/vscode",
+    "cmake.configureEnvironment": {
+        "PATH": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin;${env:PATH}"
+    },
+    "cmake.buildEnvironment": {
+        "PATH": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin;${env:PATH}"
+    },
+    "terminal.integrated.env.windows": {
+        "PATH": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin;${env:PATH}"
+    },
+    "stm32cube-ide-clangd.path": "cube",
+    "stm32cube-ide-clangd.arguments": [
+        "starm-clangd",
+        "--query-driver=${env:CUBE_BUNDLE_PATH}/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-gcc*",
+        "--query-driver=${env:CUBE_BUNDLE_PATH}/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-g++*"
+    ]
+}

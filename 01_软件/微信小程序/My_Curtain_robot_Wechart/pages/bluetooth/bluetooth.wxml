@@ -1,0 +1,170 @@
+<cu-custom bgColor="bg-gradual-blue" isBack="{{false}}">
+	<!-- <view slot="backText">返回</view> -->
+	<view slot="content">Curtain Robot</view>
+</cu-custom>
+<view class="cu-bar bg-white margin-top solid-bottom">
+	<view class="action">
+		<text class="cuIcon-title text-blue"></text>设备状态
+	</view>
+</view>
+<!-- 弹性布局 flex-sub 、twice 、treble代表比例 -->
+<view class="flex ">
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<view>
+			初始化蓝牙: <text style='color:red'>{{openBluetoothAdapter ? '成功' : '失败'}}</text>
+		</view>
+		<view>
+			蓝牙是否可用:<text style='color:red'> {{available ? '可用' : '不可用'}}</text>
+		</view>
+		<view>
+			是否正在搜索:<text style='color:red'> {{discovering ? '搜索' : '停止'}}</text>
+		</view>
+	</view>
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<view>
+			连接状态: <text style="color:red;">{{connected ? '连接成功' : '连接断开'}}</text>
+		</view>
+		<view>
+			电池电量: <text style="color:red;">98%</text>
+		</view>
+		<!-- <view>deviceId:{{connectingDeviceId}}</view>
+			<view>serviceId:{{services_UUID}}</view>
+			<view>characteristicId:{{characteristic_UUID}}</view> -->
+	</view>
+</view>
+<view class="flex  p-xs margin-bottom-sm mb-sm">
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-cyan margin-tb-sm lg shadow" bindtap='searchEvent'>
+			<text class="cuIcon-loading2 iconfont-spin"></text>搜索
+		</button>
+	</view>
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-cyan margin-tb-sm lg shadow" bindtap='closeConnection'>
+			<text class="cuIcon-roundclosefill"></text>断开
+		</button>
+	</view>
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-cyan margin-tb-sm lg shadow" bindtap='closeConnection'>
+			<text class="cuIcon-we "></text>休眠
+		</button>
+	</view>
+</view>
+<view class="flex  p-xs margin-bottom-sm mb-sm">
+ <view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-gradual-blue margin-tb-sm lg shadow" bindtap='send_start'>
+			<text class="cuIcon-playfill "></text>开启
+		</button>
+	</view>
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-grey margin-tb-sm lg shadow" bindtap='send_stop'>
+			<text class="cuIcon-stop "></text>关闭
+		</button>
+	</view>
+	<view class="flex-sub bg-white padding-sm margin-xs shadow-warp radius">
+		<button class="cu-btn block bg-gradual-green margin-tb-sm lg shadow" bindtap='send_set'>
+			<text class="cuIcon-pulldown "></text>记忆
+		</button>
+	</view>
+</view>
+	
+<view class="padding-xl radius shadow-warp bg-white ">
+	接收数据 <text style="color:red;">{{shakeNum}}</text>
+</view>
+
+
+
+<!---> 
+  滑动条 bindchanging动态触发 
+   bindchange  单次触发
+<-->
+
+<view class="padding bg-white">
+<text class="section__title">动态调节数据</text>
+	<view class="body-view">
+		<slider bindchange="sliderchange" step="5" min="50" max="200" show-value />
+	</view>
+  <view class="cu-progress round sm striped active">
+    <view class="bg-green" style="width:60%"></view>
+  </view>
+</view>
+
+
+<form>
+	<view class="cu-form-group">
+		<view class="title">定时开启</view>
+		<picker mode="time" value="{{open_time}}" start="07:01" end="21:01" bindchange="Open_TimeChange">
+			<view class="picker">
+				{{open_time}}
+			</view>
+		</picker>
+	</view>
+	<view class="cu-form-group">
+		<view class="title">定时关闭</view>
+		<picker mode="time" value="{{close_time}}" start="07:01" end="21:01" bindchange="Close_TimeChange">
+			<view class="picker">
+				{{close_time}}
+			</view>
+		</picker>
+	</view>
+</form>	
+
+
+<!-- 支持左滑的列表 -->
+<view class="cu-bar bg-white solid-bottom margin-top">
+	<view class="action">
+		<text class="cuIcon-title text-orange "></text>设备列表
+	</view>
+</view>
+<view class="cu-list menu-avatar">
+	<view class="cu-item {{modalName=='move-box-'+ index?'move-cur':''}}" wx:for="{{deviceList}}" wx:for-item="device" wx:key="{{device.deviceId}}" bindtouchstart="ListTouchStart" bindtouchmove="ListTouchMove" bindtouchend="ListTouchEnd" data-target="move-box-{{index}}">
+		<view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/web201310/skin/big2100{{index+1}}.jpg);"></view>
+		<view class="content">
+			<view class="text-grey">设备名称：{{device.name}}</view>
+			<view class="text-gray text-sm">
+				<text class="cuIcon-order text-red"></text>UUID：{{device.advertisServiceUUIDs}}</view>
+		</view>
+		<view class="action">
+			<view class="text-grey text-xs">{{device.RSSI}}</view>
+			<view class="cu-tag round bg-grey sm">{{index}}</view>
+		</view>
+		<view class="move">
+			<view class="bg-grey" data-deviceid="{{device.deviceId}}" data-services="{{device.advertisServiceUUIDs}}" bindtap="connectEvent">连接</view>
+			<!-- <button size="mini" type="primary" data-deviceid="{{device.deviceId}}" data-services="{{device.advertisServiceUUIDs}}" bindtap="connectEvent">连接</button> -->
+			<view class="bg-red">删除</view>
+		</view>
+	</view>
+</view>
+
+<!---> 蓝牙检测设备列表 <-->
+<!-- <view style="margin-top:30rpx;font-size:22rpx;">
+	<block wx:for="{{deviceList}}" wx:for-item="device" wx:key="{{device.deviceId}}">
+		<view style="margin-bottom: 20rpx;border: 1px solid red;">
+			<view>设备名称: {{device.name}}</view>
+			<view>设备ID: {{device.deviceId}}</view>
+			<view>广播数据: {{device.advertisData}}</view>
+			<view>信号强度: {{device.RSSI}}</view>
+			<view>UUID:
+				<block wx:for="{{device.advertisServiceUUIDs}}" wx:for-item="uuid" wx:key="{{index}}">
+					<view style="margin-left: 50rpx;">{{uuid}}</view>
+				</block>
+			</view>
+			<button size="mini" type="primary" data-deviceid="{{device.deviceId}}" data-services="{{device.advertisServiceUUIDs}}" bindtap="connectEvent">连接</button>
+		</view>
+	</block>
+</view> -->
+
+<!---> UI相关代码 <-->
+<view class="fadeIn {{hideToast ? 'fadeOut' : ''}}" wx:if="{{toast}}">
+	<view class="weui-mask_transparent"></view>
+	<view class="weui-toast">
+		<i class="weui-icon-success-no-circle weui-icon_toast"></i>
+		<view class="weui-toast__content">已完成</view>
+	</view>
+</view>
+<view class="fadeIn {{hideLoading ? 'fadeOut' : ''}}" wx:if="{{loading}}">
+	<view class="weui-mask_transparent"></view>
+	<view class="weui-toast">
+		<i class="weui-loading weui-icon_toast"></i>
+		<view class="weui-toast__content">搜索设备中</view>
+	</view>
+</view>

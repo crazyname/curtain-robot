@@ -1,0 +1,58 @@
+#include "temper_wakeup.h"
+#include "stdio.h"
+#include "string.h"
+#include "EEPROM.h"
+#include "rtc.h"
+#include "nb.h"
+
+
+uint8_t gpio_flag= 0;
+
+void PA0_wakeup_init(void)
+{
+	GPIO_InitTypeDef GPIO_TypeDef_Init;
+	
+	GPIO_TypeDef_Init.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_TypeDef_Init.Mode = GPIO_MODE_IT_RISING;
+	GPIO_TypeDef_Init.Pin = GPIO_PIN_0;
+	GPIO_TypeDef_Init.Pull = GPIO_PULLDOWN;
+	
+	HAL_GPIO_Init(GPIOA, &GPIO_TypeDef_Init);
+	
+	HAL_NVIC_SetPriority(EXTI0_1_IRQn, 1, 4);
+	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+
+}
+
+void standby_mode (void)
+{
+		/* 清除待机标志位 */
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	
+
+	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);			//使能唤醒引脚
+	HAL_PWR_EnterSTANDBYMode();			//待机模式
+}
+
+
+void EXTI0_1_IRQHandler(void)
+{
+
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	
+	printf("gpio_flag =%d\r\n",gpio_flag);
+	
+
+}
+
+
+
+
+
+

@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "STM32: Configure Debug",
+            "type": "shell",
+            "command": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin\\cmake.exe",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}\\build\\vscode",
+                "-G",
+                "Ninja",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_MAKE_PROGRAM=C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin\\ninja.exe",
+                "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}\\cmake\\gcc-arm-none-eabi.cmake"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PATH": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin;${env:PATH}"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "STM32: Build Debug",
+            "type": "shell",
+            "command": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin\\cmake.exe",
+            "args": [
+                "--build",
+                "${workspaceFolder}\\build\\vscode"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PATH": "C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\cmake\\4.2.3+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\ninja\\1.13.2+st.1\\bin;C:\\Users\\enze\\AppData\\Local\\stm32cube\\bundles\\gnu-tools-for-stm32\\14.3.1+st.2\\bin;${env:PATH}"
+                }
+            },
+            "dependsOn": [
+                "STM32: Configure Debug"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

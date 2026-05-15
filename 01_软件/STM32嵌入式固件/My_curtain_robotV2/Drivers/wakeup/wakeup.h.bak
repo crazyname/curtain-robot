@@ -1,0 +1,22 @@
+#ifndef _TEMPER_WAKEUP_H
+#define _TEMPER_WAKEUP_H
+
+#include "main.h"
+#include "bsp_adc.h"
+
+
+
+
+void PA0_wakeup_init(void);	 
+void EXTI0_1_IRQHandler(void);	 
+void standby_mode (void);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);	
+
+
+
+
+
+
+#endif
+
+
