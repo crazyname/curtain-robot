@@ -41,6 +41,11 @@ dist/
 out/
 Debug/
 Release/
+*.elf
+*.hex
+*.lst
+*.sct
+*.Bak
 *.crf
 *.d
 *.axf
@@ -49,12 +54,18 @@ Release/
 *.dep
 *.htm
 *.build_log.htm
+JLinkLog.txt
+JLinkSettings.ini
+*.uvguix.*
+*.bak
+*.orig
 
 # Archives
 *.zip
 *.rar
 *.7z
 05_原始压缩包/
+03_课程与文档/
 
 # Secrets
 .env
@@ -69,3 +80,6 @@ password.txt
 Thumbs.db
 desktop.ini
 .git_bad_upload_backup/
+
+# Local backups kept beside this project, never commit
+本地备份_不提交git/
