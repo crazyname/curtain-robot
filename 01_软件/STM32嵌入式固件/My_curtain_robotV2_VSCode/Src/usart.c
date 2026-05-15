@@ -263,6 +263,7 @@ void EnableUsart_IT(void)
   */
 int fputc(int ch, FILE *f)
 {
+    (void)f;
     HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xffff);
     return ch;
 }
@@ -275,6 +276,7 @@ int fputc(int ch, FILE *f)
   */
 int fgetc(FILE * f)
 {
+    (void)f;
     uint8_t ch = 0;
     while(HAL_UART_Receive(&huart1,&ch, 1, 0xffff)!=HAL_OK);
     return ch;
