@@ -93,6 +93,29 @@ def test_motor_controller():
         return False
 
 
+def test_serial_calibration_protocol():
+    """测试0.3串口校准协议：开始和结束都应向STM32发送C"""
+    print("\n测试串口校准协议...")
+    try:
+        from motor_controller import MotorController
+
+        serial_mock = Mock()
+        controller = MotorController(serial_communicator=serial_mock, data_file='test_data.json')
+        controller.start_calibration()
+        controller.end_calibration('open')
+
+        if serial_mock.send_calibrate_command.call_count != 2:
+            raise AssertionError("校准命令C没有发送两次")
+
+        print("✓ 串口校准协议正常（C开始，C结束）")
+        return True
+    except Exception as e:
+        print(f"✗ 串口校准协议测试失败: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def test_light_sensor():
     """测试光线传感器（模拟模式）"""
     print("\n测试光线传感器...")
@@ -158,6 +181,7 @@ def main():
     results.append(("GPIO控制器", test_gpio_controller()))
     results.append(("串口通信器", test_serial_communicator()))
     results.append(("电机控制器", test_motor_controller()))
+    results.append(("串口校准协议", test_serial_calibration_protocol()))
     results.append(("光线传感器", test_light_sensor()))
     results.append(("自动控制器", test_auto_controller()))
     
