@@ -1,12 +1,12 @@
 # 边缘计算与物联网融合的智能窗帘机器人装置
 
-当前说明版本：0.3.3-vscode
+当前说明版本：0.3.5-vscode-docs
 
 本仓库是智能窗帘机器人装置的软硬件一体化工程，当前已经包含 STM32 固件、Python 边缘控制程序、微信小程序、PCB 工程和 3D 结构文件。
 
 STM32 固件当前以 VS Code + STM32Cube 扩展 + CMake + Ninja + GCC 作为开发方式。后续 AI 或开发者优先维护 VSCode 工程，不要把它删除成只剩 Keil 工程。
 
-旧版 Keil/CubeMX 工程 `My_curtain_robotV2` 已压缩备份到本地目录 `本地备份_不提交git\固件工程备份\`，该备份目录不提交到 git。仓库内只保留 `My_curtain_robotV2_VSCode` 作为 STM32 固件开发工程。
+旧版 Keil/CubeMX 工程和历史原始资料已集中放入本地备份目录 `04_本地备份/`，该目录不提交到 git。仓库内只保留 `My_curtain_robotV2_VSCode` 作为 STM32 固件开发工程。
 
 ## 当前版本定位
 
@@ -341,6 +341,23 @@ cmake --build build\vscode
 ```
 
 正确做法是先进入 VSCode 工程目录，或者直接使用 VS Code 的 `STM32: Build Debug` 任务。
+
+当前已经取消 `X:` 盘符映射。它原本只是 `subst` 映射到 STM32 VSCode 工程目录，不是真实磁盘。取消映射不会删除源码；后续也不要重新依赖 `X:\` 作为工程入口。
+
+## 开发环境维护记录
+
+### 已清理的问题
+
+- 已取消 `X:` 盘符映射，后续直接打开 `01_软件\STM32嵌入式固件\My_curtain_robotV2_VSCode`。
+- STM32 构建产物位于 `build/`，该目录已被忽略，不提交到 git。
+- 本地备份位于 `04_本地备份/`，该目录已被 `.gitignore` 忽略，不提交到 git。
+- 当前仓库只保留 `My_curtain_robotV2_VSCode` 作为 STM32 主开发工程。
+- STM32 构建警告已处理，当前 VSCode/CMake Debug 构建可以无 warning 通过。
+
+### 暂时保留的问题
+
+- `My_curtain_robotV2_VSCode/MDK-ARM/` 仍保留在 VSCode 工程内。它不是主开发入口，但可能是 CubeMX/历史工程生成残留，暂不删除。
+- `04_本地备份/` 体积较大，但它是本地恢复资料，不参与源码版本管理。
 
 ## STM32CubeMX
 

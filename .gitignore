@@ -82,6 +82,3 @@ password.txt
 Thumbs.db
 desktop.ini
 .git_bad_upload_backup/
-
-# Local backups kept beside this project, never commit
-本地备份_不提交git/
