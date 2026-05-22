@@ -1,75 +1,15 @@
 # Python cache
 __pycache__/
-*.py[cod]
+*.pyc
 *.pyo
+*.pyd
 
-# Virtual environments
+# Python virtual environments
 .venv/
 venv/
 env/
 
-# IDE / editor
-.vscode/
-.idea/
-.metadata/
-.project
-.cproject
-.settings/
-
-# Logs
-*.log
-logs/
-
-# Executables / binaries
-*.exe
-*.dll
-*.bin
-*.o
-*.obj
-*.lib
-*.a
-
-# JLC assistant / installer files
-jlc-assistant/
-jlc-assistant-window-*.exe
-04_工具/立创EDA助手/
-04_工具/安装包/*.exe
-
-# Build / generated files
-build/
-dist/
-out/
-Debug/
-Release/
-*.elf
-*.hex
-*.lst
-*.sct
-*.Bak
-*.crf
-*.d
-*.axf
-*.map
-*.lnp
-*.dep
-*.htm
-*.build_log.htm
-JLinkLog.txt
-JLinkSettings.ini
-*.uvguix.*
-*.bak
-*.orig
-
-# Archives
-*.zip
-*.rar
-*.7z
-05_原始压缩包/
-03_课程与文档/
-03_*/
-04_*/
-
-# Secrets
+# Local config and secrets
 .env
 *.pem
 *.key
@@ -77,8 +17,76 @@ id_rsa
 token.txt
 password.txt
 
+# Logs
+*.log
+logs/
+
+# Build outputs
+build/
+dist/
+out/
+Debug/
+Release/
+*.elf
+*.hex
+*.map
+*.lst
+*.sct
+*.axf
+*.o
+*.obj
+*.bin
+*.exe
+*.dll
+*.lib
+*.a
+*.crf
+*.d
+*.lnp
+*.dep
+*.htm
+*.build_log.htm
+
+# STM32 / J-Link local outputs
+JLinkLog.txt
+JLinkSettings.ini
+*.uvguix.*
+
+# Local editor and IDE state
+/.vscode/
+.idea/
+.metadata/
+.project
+.cproject
+.settings/
+
+# Backups and temporary files
+*.bak
+*.Bak
+*.orig
+*.tmp
+*.swp
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Local backup folders
+03_项目报告/
+04_本地备份/
+本地备份_不提交git/
+.git_bad_upload_backup/
+
+# Office temporary files
+~$*.doc
+~$*.docx
+~$*.xls
+~$*.xlsx
+~$*.ppt
+~$*.pptx
+
 # OS files
 .DS_Store
 Thumbs.db
 desktop.ini
-.git_bad_upload_backup/
