@@ -35,6 +35,14 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef enum
+{
+  CURTAIN_STATE_IDLE = 0,
+  CURTAIN_STATE_OPENING,
+  CURTAIN_STATE_CLOSING,
+  CURTAIN_STATE_STOPPED,
+  CURTAIN_STATE_CALIBRATING
+} CurtainState_t;
 
 /* USER CODE END PTD */
 
@@ -50,6 +58,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static CurtainState_t g_curtainState = CURTAIN_STATE_IDLE;
 
 /* USER CODE END PV */
 
@@ -61,6 +70,44 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void CurtainMotor_Stop(void)
+{
+  HAL_GPIO_WritePin(GPIOB, N_IN1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, N_IN2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, NSLEEP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, N_IN2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, N_IN1_Pin, GPIO_PIN_RESET);
+}
+
+static const char *CurtainState_ToString(CurtainState_t state)
+{
+  switch (state)
+  {
+    case CURTAIN_STATE_OPENING:
+      return "OPENING";
+    case CURTAIN_STATE_CLOSING:
+      return "CLOSING";
+    case CURTAIN_STATE_STOPPED:
+      return "STOPPED";
+    case CURTAIN_STATE_CALIBRATING:
+      return "CALIBRATING";
+    case CURTAIN_STATE_IDLE:
+    default:
+      return "IDLE";
+  }
+}
+
+static void CurtainStatus_Send(void)
+{
+  char status[40];
+  int len = snprintf(status, sizeof(status), "STATE:%s;CAL:0\r\n", CurtainState_ToString(g_curtainState));
+
+  /* CAL is fixed at 0 until the real calibration-complete state is persisted. */
+  if (len > 0)
+  {
+    HAL_UART_Transmit(&huart2, (uint8_t *)status, (uint16_t)len, 0xffff);
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -141,6 +188,7 @@ int main(void)
             Usart2type.UsartRecFlag = 0;
             if( strstr((char *)Usart2type.Usart2RecBuffer,"ON") != NULL ) //����ָ��
             {
+                g_curtainState = CURTAIN_STATE_OPENING;
                 memset(Usart2type.Usart2RecBuffer, 0x00, sizeof(Usart2type.Usart2RecBuffer)); //����ջ�����
                 printf("@@@@@@@@@@@@@@@@@\r\n");
                 if(worktime != 0)  //������ʱ��
@@ -158,6 +206,7 @@ int main(void)
             }
             if( strstr((char *)Usart2type.Usart2RecBuffer,"OFF") != NULL ) //�ر�ָ��
             {
+                g_curtainState = CURTAIN_STATE_CLOSING;
                 printf("&&&&&&&&&&&&&&&&&&\r\n");
                 memset(Usart2type.Usart2RecBuffer, 0x00, sizeof(Usart2type.Usart2RecBuffer)); //����ջ�����
                 if(worktime != 0)  //������ʱ��
@@ -177,6 +226,17 @@ int main(void)
                     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI); //����STOP�͹���ģʽ
                 }
             }
+            if( strstr((char *)Usart2type.Usart2RecBuffer,"STOP") != NULL )
+            {
+                CurtainMotor_Stop();
+                g_curtainState = CURTAIN_STATE_STOPPED;
+                memset(Usart2type.Usart2RecBuffer, 0x00, sizeof(Usart2type.Usart2RecBuffer));
+            }
+            if( strstr((char *)Usart2type.Usart2RecBuffer,"STATUS") != NULL )
+            {
+                CurtainStatus_Send();
+                memset(Usart2type.Usart2RecBuffer, 0x00, sizeof(Usart2type.Usart2RecBuffer));
+            }
             if( strstr((char *)Usart2type.Usart2RecBuffer,"S") != NULL ) //��ʼ��ʱ��ָ��
             {
                 if( strstr((char *)Usart2type.Usart2RecBuffer,"T") != NULL )
@@ -185,6 +245,7 @@ int main(void)
                     Find_flag =  Find_string((char *)Usart2type.Usart2RecBuffer,"S","T",(char *)Time_buf);
                     printf("time: %s,%lu",Time_buf,(unsigned long)atoi((char *)Time_buf));
                     if(Find_flag) {
+                        g_curtainState = CURTAIN_STATE_CALIBRATING;
                         Calibration_Times((char *)Time_buf);
                     }
                 }
@@ -193,6 +254,7 @@ int main(void)
             // HAL_GetTick();    //��ȡϵͳ����ʱ��   uint32_t
             if( strstr((char *)Usart2type.Usart2RecBuffer,"C") != NULL ) //��ʼ��ʱ��ָ��
             {
+                g_curtainState = CURTAIN_STATE_CALIBRATING;
                 if(start_time == 0) //��һ�γ�ʼ��
                 {
                     start_time = HAL_GetTick();
