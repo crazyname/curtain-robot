@@ -154,6 +154,12 @@ class CurtainRobot:
                 logger.info(f"接收到工作时间: {worktime}ms")
             except:
                 pass
+        elif data.startswith("STATE:") and self.serial_communicator.last_device_status:
+            status = self.serial_communicator.last_device_status
+            logger.info(
+                f"接收到设备状态: {status['state']}, "
+                f"校准状态: {'已校准' if status['calibrated'] else '未校准/占位'}"
+            )
     
     def open_curtain(self):
         """打开窗帘"""
@@ -164,6 +170,11 @@ class CurtainRobot:
         """关闭窗帘"""
         logger.info("用户命令: 关闭窗帘")
         self.motor_controller.close_curtain()
+
+    def stop_curtain(self):
+        """立即停止窗帘运动。"""
+        logger.info("用户命令: 停止窗帘")
+        self.motor_controller.stop()
     
     def calibrate_open(self):
         """校准打开时间"""
@@ -190,6 +201,10 @@ class CurtainRobot:
             'auto_control_enabled': self.auto_controller.enabled,
             'open_time': self.motor_controller.open_time,
             'close_time': self.motor_controller.close_time,
+            'device_status': (
+                self.serial_communicator.last_device_status
+                if self.serial_communicator else None
+            ),
         }
         
         if self.light_sensor:
@@ -200,6 +215,9 @@ class CurtainRobot:
     
     def print_status(self):
         """打印状态信息"""
+        status_query = None
+        if self.serial_communicator:
+            status_query = self.serial_communicator.query_status()
         status = self.get_status()
         print("\n" + "=" * 50)
         print(f"智能窗帘机器人状态 v{status['version']}")
@@ -214,6 +232,15 @@ class CurtainRobot:
         print(f"自动控制: {'已启用' if status['auto_control_enabled'] else '已禁用'}")
         print(f"打开时间: {status['open_time']}ms")
         print(f"关闭时间: {status['close_time']}ms")
+        if status_query and status_query['success']:
+            device_status = status_query['status']
+            print("STM32状态查询: 已收到本次 STATUS 响应")
+            print(f"STM32运行状态: {device_status['state']}")
+            print(f"STM32校准标志: {'1' if device_status['calibrated'] else '0'}")
+        elif status_query and status_query['error'] == 'timeout':
+            print("STM32状态查询: 超时，未收到本次 STATUS 响应")
+        elif status_query and status_query['error'] == 'send_failed':
+            print("STM32状态查询: STATUS 发送失败")
         print("=" * 50 + "\n")
     
     def _signal_handler(self, signum, frame):
@@ -245,6 +272,7 @@ class CurtainRobot:
         print("命令列表:")
         print("  1 或 open    - 打开窗帘")
         print("  2 或 close   - 关闭窗帘")
+        print("  0 或 stop    - 立即停止窗帘")
         print("  3 或 cal_open  - 校准打开时间")
         print("  4 或 cal_close - 校准关闭时间")
         print("  5 或 status  - 查看状态")
@@ -261,6 +289,8 @@ class CurtainRobot:
                     self.open_curtain()
                 elif cmd in ['2', 'close']:
                     self.close_curtain()
+                elif cmd in ['0', 'stop']:
+                    self.stop_curtain()
                 elif cmd in ['3', 'cal_open']:
                     self.calibrate_open()
                 elif cmd in ['4', 'cal_close']:
