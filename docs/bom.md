@@ -19,7 +19,7 @@
 | `02_硬件/立创EDA工程/ProPrj_1111_2025-11-28.epro` | 存在另一份 EDA 工程，需后续与 Altium 版本核对一致性 |
 | `02_硬件/机械结构_3D外壳/3D外壳设计/` | N20 电机、外壳、底座、电机座、滚轮、挂钩、弹簧、电池、轴承、装配体及 STL 打印件文件名 |
 | `01_软件/STM32嵌入式固件/My_curtain_robotV2_VSCode/My_curtain_robotV2.ioc` | 固件目标器件与已配置接口：STM32L051K8U3、UFQFPN32、ADC、I2C1、USART1/2、RTC、SWD、电机控制和蓝牙控制标号 |
-| `README.md`、`ROADMAP.md`、`docs/当前实现状态与后续规划.md` | 当前硬件资料范围、BOM 初稿边界、整机尚未验证及后续核对方向 |
+| `README.md` | 当前硬件资料范围、BOM 初稿边界、整机尚未验证及后续核对方向 |
 
 ### 2.2 确认规则
 
