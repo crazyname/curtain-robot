@@ -161,8 +161,13 @@ class MotorController:
     def stop(self):
         """立即停止电机"""
         logger.info("停止电机")
+        if self.serial_communicator:
+            return self.serial_communicator.send_stop_command()
         if self.gpio_controller:
             self.gpio_controller.stop()
+            return True
+        logger.error("未配置GPIO控制器或串口通信器")
+        return False
     
     def cleanup(self):
         """清理资源"""

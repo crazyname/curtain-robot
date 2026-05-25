@@ -1,6 +1,4 @@
-"""
-串口通信模块 - 用于与U60FNQ2单片机通信
-"""
+"""串口通信模块 - 用于与 STM32 控制固件通信。"""
 import time
 import logging
 import threading
@@ -14,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class SerialCommunicator:
-    """串口通信类，用于与U60FNQ2单片机通信"""
+    """串口通信类，用于与 STM32 控制固件通信。"""
     
     def __init__(self, port, baudrate=9600, timeout=1.0):
         """
@@ -33,6 +31,9 @@ class SerialCommunicator:
         self.receive_callback = None
         self.receive_thread = None
         self.running = False
+        self.last_device_status = None
+        self._status_condition = threading.Condition()
+        self._status_response_sequence = 0
         
     def connect(self):
         """连接串口"""
@@ -126,14 +127,43 @@ class SerialCommunicator:
                         buffer = buffer[line_end+1:]
                         
                         if line:
-                            logger.debug(f"接收到数据: {line}")
-                            if self.receive_callback:
-                                self.receive_callback(line)
+                            self._process_received_line(line)
                 
                 time.sleep(0.01)  # 避免CPU占用过高
             except Exception as e:
                 logger.error(f"接收数据错误: {e}")
                 time.sleep(0.1)
+
+    def _process_received_line(self, line):
+        """记录并转发一行设备响应。"""
+        logger.debug(f"接收到数据: {line}")
+        status = self.parse_status_response(line)
+        if status is not None:
+            with self._status_condition:
+                self.last_device_status = status
+                self._status_response_sequence += 1
+                self._status_condition.notify_all()
+        if self.receive_callback:
+            self.receive_callback(line)
+
+    @staticmethod
+    def parse_status_response(response):
+        """解析 STM32 的最小 `STATE:<state>;CAL:<0|1>` 状态响应。"""
+        fields = {}
+        for item in response.strip().split(';'):
+            key, separator, value = item.partition(':')
+            if not separator:
+                return None
+            fields[key.strip().upper()] = value.strip()
+
+        if not fields.get('STATE') or fields.get('CAL') not in {'0', '1'}:
+            return None
+
+        return {
+            'state': fields['STATE'],
+            'calibrated': fields['CAL'] == '1',
+            'raw': response.strip(),
+        }
     
     def send_open_command(self):
         """发送打开窗帘命令"""
@@ -146,3 +176,40 @@ class SerialCommunicator:
     def send_calibrate_command(self):
         """发送校准命令"""
         return self.send_command("C")
+
+    def send_stop_command(self):
+        """发送立即停止命令。"""
+        return self.send_command("STOP")
+
+    def send_status_command(self):
+        """发送状态查询命令。"""
+        return self.send_command("STATUS")
+
+    def query_status(self, timeout=None):
+        """发送 `STATUS` 并等待本次查询之后到达的新状态响应。"""
+        wait_timeout = self.timeout if timeout is None else timeout
+        with self._status_condition:
+            previous_sequence = self._status_response_sequence
+            if not self.send_status_command():
+                return {
+                    'success': False,
+                    'status': None,
+                    'error': 'send_failed',
+                }
+
+            deadline = time.monotonic() + max(wait_timeout, 0)
+            while self._status_response_sequence <= previous_sequence:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return {
+                        'success': False,
+                        'status': None,
+                        'error': 'timeout',
+                    }
+                self._status_condition.wait(remaining)
+
+            return {
+                'success': True,
+                'status': self.last_device_status,
+                'error': None,
+            }

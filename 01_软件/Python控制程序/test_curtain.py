@@ -57,8 +57,27 @@ def test_serial_communicator():
         communicator = SerialCommunicator('/dev/ttyUSB0', 9600)
         print("✓ 串口通信器初始化成功")
         
-        # 测试命令发送（模拟）
-        print("✓ 串口通信器功能正常（模拟模式）")
+        communicator.serial = Mock()
+        communicator.is_connected = True
+        if not communicator.send_stop_command() or not communicator.send_status_command():
+            raise AssertionError("STOP/STATUS 发送失败")
+        expected = [b'STOP\r\n', b'STATUS\r\n']
+        sent = [call.args[0] for call in communicator.serial.write.call_args_list]
+        if sent != expected:
+            raise AssertionError(f"命令发送内容错误: {sent}")
+
+        communicator._process_received_line("STATE:STOPPED;CAL:0")
+        if communicator.last_device_status != {
+            'state': 'STOPPED',
+            'calibrated': False,
+            'raw': 'STATE:STOPPED;CAL:0',
+        }:
+            raise AssertionError("STM32 状态响应解析失败")
+
+        if communicator.parse_status_response("invalid") is not None:
+            raise AssertionError("无效状态响应未被拒绝")
+
+        print("✓ STOP/STATUS 发送与状态解析正常（模拟模式）")
         
         return True
     except Exception as e:
@@ -113,6 +132,77 @@ def test_serial_calibration_protocol():
         print(f"✗ 串口校准协议测试失败: {e}")
         import traceback
         traceback.print_exc()
+        return False
+
+
+def test_serial_stop_protocol():
+    """测试串口模式下停止动作会发出 STOP。"""
+    print("\n测试串口停止协议...")
+    try:
+        from motor_controller import MotorController
+
+        serial_mock = Mock()
+        controller = MotorController(serial_communicator=serial_mock, data_file='test_data.json')
+        controller.stop()
+        serial_mock.send_stop_command.assert_called_once_with()
+
+        print("✓ 串口停止协议正常（STOP）")
+        return True
+    except Exception as e:
+        print(f"✗ 串口停止协议测试失败: {e}")
+        return False
+
+
+def test_serial_status_query():
+    """测试 STATUS 查询只接受发送后的新状态响应。"""
+    print("\n测试串口状态查询...")
+    try:
+        from serial_communicator import SerialCommunicator
+
+        communicator = SerialCommunicator('/dev/ttyUSB0', 9600)
+        communicator.serial = Mock()
+        communicator.is_connected = True
+        communicator.serial.write.side_effect = (
+            lambda data: communicator._process_received_line("STATE:STOPPED;CAL:0")
+            if data == b'STATUS\r\n' else None
+        )
+        result = communicator.query_status(timeout=0.05)
+        if not result['success'] or result['status']['state'] != 'STOPPED':
+            raise AssertionError(f"本次 STATUS 新响应未正确返回: {result}")
+
+        timeout_communicator = SerialCommunicator('/dev/ttyUSB0', 9600)
+        timeout_communicator.serial = Mock()
+        timeout_communicator.is_connected = True
+        timeout_result = timeout_communicator.query_status(timeout=0.01)
+        if timeout_result != {
+            'success': False,
+            'status': None,
+            'error': 'timeout',
+        }:
+            raise AssertionError(f"STATUS 超时结果错误: {timeout_result}")
+
+        timeout_communicator._process_received_line("STATE:OPENING;CAL:0")
+        stale_result = timeout_communicator.query_status(timeout=0.01)
+        if stale_result != {
+            'success': False,
+            'status': None,
+            'error': 'timeout',
+        }:
+            raise AssertionError(f"旧缓存被误报为本次响应: {stale_result}")
+
+        disconnected_communicator = SerialCommunicator('/dev/ttyUSB0', 9600)
+        send_failed_result = disconnected_communicator.query_status(timeout=0.01)
+        if send_failed_result != {
+            'success': False,
+            'status': None,
+            'error': 'send_failed',
+        }:
+            raise AssertionError(f"STATUS 发送失败结果错误: {send_failed_result}")
+
+        print("✓ STATUS 新响应、超时、发送失败与旧缓存隔离正常（模拟模式）")
+        return True
+    except Exception as e:
+        print(f"✗ 串口状态查询测试失败: {e}")
         return False
 
 
@@ -182,6 +272,8 @@ def main():
     results.append(("串口通信器", test_serial_communicator()))
     results.append(("电机控制器", test_motor_controller()))
     results.append(("串口校准协议", test_serial_calibration_protocol()))
+    results.append(("串口停止协议", test_serial_stop_protocol()))
+    results.append(("串口状态查询", test_serial_status_query()))
     results.append(("光线传感器", test_light_sensor()))
     results.append(("自动控制器", test_auto_controller()))
     
