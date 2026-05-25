@@ -2,6 +2,19 @@
 
 本文件记录仓库协作版本。这里的版本号用于描述仓库整体状态，不一定等同于 Python 程序内部的 `PROJECT_VERSION`。
 
+## 未发布 - 公开仓库基线收口
+
+- 删除一张带第三方水印且未见公开再发布授权依据的公开参考图片。
+- 重写仓库入口说明，并同步路线图、状态文档、协议迁移优先级和 BOM 引用边界，使其对应当前主线与实现事实。
+- 保持限制说明：Python `STOP` / `STATUS` 闭环、整机验证与资产全面授权核验仍未完成。
+
+## 截至 2026-05-25 已合入主线的协作基线
+
+- 已纳入 `LICENSE`、`CONTRIBUTING.md` 与 GitHub Issue / Pull Request 协作模板。
+- 已优化 README 首页入口，并纳入 `ROADMAP.md`。
+- 已纳入 `docs/串口协议草案.md`，且 STM32 已基础支持 `STOP` / `STATUS` 状态查询。
+- 已纳入 `docs/bom.md` 硬件物料核对初稿。
+
 ## 0.3.6 - README / 协作说明 / .gitignore 整理
 
 - 将 README 整理为面向 GitHub 使用者和开发者的正式入口文档。
