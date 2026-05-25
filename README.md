@@ -8,6 +8,67 @@
 
 当前仓库适合用于课程项目、原型验证和后续协作开发。它不是量产级成品，真实安装前仍需要完成硬件联调、结构可靠性测试和安全保护验证。
 
+## 项目入口
+
+- [Quick Start](#quick-start)
+- [Demo](#demo)
+- [Hardware Overview](#hardware-overview)
+- [Software Architecture](#software-architecture)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Quick Start
+
+1. 阅读 [当前实现状态与后续规划](docs/当前实现状态与后续规划.md)，确认哪些能力已经实现、哪些仍在计划或联调阶段。
+2. 按需要进入对应子工程：
+   - STM32 固件：`01_软件/STM32嵌入式固件/My_curtain_robotV2_VSCode/`
+   - Python 边缘控制：`01_软件/Python控制程序/`
+   - 微信小程序：`01_软件/微信小程序/My_Curtain_robot_Wechart/`
+   - 硬件资料：`02_硬件/`
+3. 开发串口通信、控制指令或跨端联调前，先查看 [串口协议草案](docs/串口协议草案.md)。
+
+本仓库当前更适合作为智能窗帘原型项目的代码与资料基线。复现或演示前，仍需要结合真实电机、电源、传感器、结构件和安装环境完成联调验证。
+
+## Demo
+
+待补充实物演示。
+
+当前仓库尚未提供最终整机实物图或演示视频。现阶段可以先参考：
+
+- `02_硬件/机械结构_3D外壳/` 中的机械结构、SolidWorks 源文件、STL 打印文件和结构参考资料。
+- `03_项目报告/` 中的项目报告图片或阶段性说明资料。
+
+## Hardware Overview
+
+硬件资料集中在 `02_硬件/`，主要包括 PCB/EDA 设计资料、机械结构源文件、STL 打印文件和结构参考内容。这些资料可用于理解硬件方案、复查结构设计和后续复现，但 README 不将其描述为已经完成整机验证的量产硬件。
+
+在真实设备上使用前，还需要完成电机负载、限位保护、电源稳定性、结构可靠性、长期运行和安装安全等验证。
+
+## Software Architecture
+
+当前已存在的组成部分包括：
+
+- 微信小程序：已有蓝牙控制原型，尚未完成与 Python 边缘控制层的统一接入。
+- Python 边缘控制：程序已存在，用于组织串口通信、自动控制、定时控制、传感器读取和本地策略。
+- STM32 固件：已具备电机执行、传感器、RTC 和串口收发等基础能力。
+- 电机与机械结构：已有窗帘运动执行机构、外壳结构、PCB/EDA 资料和 3D 打印结构文件。
+
+目标协作架构如下，当前仍在逐步打通各层通信链路：
+
+```text
+微信小程序
+  -> Python 边缘控制
+  -> STM32 固件
+  -> 电机与机械结构
+```
+
+跨端完整控制闭环尚未完成。串口命令和跨端通信约定见 [串口协议草案](docs/串口协议草案.md)。
+
+## Roadmap
+
+后续开发计划、当前限制和优先级见 [当前实现状态与后续规划](docs/当前实现状态与后续规划.md)。
+
 ## 当前状态
 
 ### 已实现
@@ -171,10 +232,18 @@ SET:<position>
   - 修改小程序时，至少用微信开发者工具打开并确认页面可加载。
   - 只修改 README、协作说明、版本记录或 `.gitignore` 时，不需要跑固件或 Python 测试，但应检查 `git diff`。
 
-更多协作约定见 `CONTRIBUTING.md`。
+更多协作约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 版本记录
 
 版本号用于描述仓库协作状态，不一定等同于 Python 程序内部的 `PROJECT_VERSION`。
 
 详细记录见 `CHANGELOG.md`。
+
+## Contributing
+
+欢迎围绕固件、边缘控制、小程序、硬件资料、测试记录和文档改进提交 Issue 或 Pull Request。提交前请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)，并保持每个 PR 聚焦一个明确任务。
+
+## License
+
+本项目的开源许可见 [LICENSE](LICENSE)。
